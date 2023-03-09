@@ -105,22 +105,18 @@
     wayland.windowManager.hyprland = {
       enable = true;
       xwayland.enable = true;
-      package = hyprland.packages.${system}.default.override {
-        nvidiaPatches = true;
-        enableXWayland = true;
-        hidpiXWayland = true;
-      };
+      package = null;
       extraConfig = ''
         exec-once=systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
         exec-once=${blackBg}/bin/blackBg
         exec-once=/usr/bin/lxqt-policykit-agent
         exec-once=dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
         #exec-once=sudo ${pkgs.ananicy}/bin/ananicy start
-        exec-once=${pkgs.dunst}/bin/dunst
+        exec-once=dunst
         exec-once=${pkgs.batsignal}/bin/batsignal
         exec-once=swayidle -w timeout 60 'systemctl suspend'
-        exec-once=${pkgs.foot}/bin/foot -s
-        exec-once=${pkgs.wlsunset}/bin/wlsunset -t 0 -l 40.0150 -L -105.2705
+        exec-once=foot -s
+        exec-once=wlsunset -t 0 -l 40.0150 -L -105.2705
         exec=oled-protection
 
         monitor=,highrr,auto,1
@@ -187,10 +183,10 @@
         #windowrule=monitor 0,xyz
 
         # example binds
-        bind=ALT,return,exec,${pkgs.foot}/bin/footclient
+        bind=ALT,return,exec,footclient
         bind=ALTSHIFT,Q,killactive,
         bind=ALTSHIFT,E,exit,
-        bind=ALT,D,exec,${pkgs.fuzzel}/bin/fuzzel --no-icons --terminal ${pkgs.foot}/bin/footclient --horizontal-pad=1920 --vertical-pad=1080 --font=monospace:pixelsize=18 --border-width=0 --border-radius=0 --match-color=5E0000ff --background-color=000000AA --selection-color=000000AA --text-color=FF9869ff --selection-text-color=FF8054ff --selection-match-color=D30000ff
+        bind=ALT,D,exec,fuzzel --no-icons --terminal footclient --horizontal-pad=1920 --vertical-pad=1080 --font=monospace:pixelsize=18 --border-width=0 --border-radius=0 --match-color=5E0000ff --background-color=000000AA --selection-color=000000AA --text-color=FF9869ff --selection-text-color=FF8054ff --selection-match-color=D30000ff
         bind=SUPER,V,togglefloating,
 
         bind=ALT,V,togglefloating,
@@ -230,8 +226,8 @@
         bind=ALT,mouse_down,workspace,e+1
         bind=ALT,mouse_up,workspace,e-1
 
-        bind=,F10,exec,${pkgs.grim}/bin/grim -g "$(${pkgs.slurp}/bin/slurp -d)" - | ${pkgs.wl-clipboard}/bin/wl-copy
-        bind=SHIFT,F10,exec,FILE="$HOME/Pictures/sc_$(date +"%F_%I_%M_%S").png"; ${pkgs.wl-clipboard}/bin/wl-copy "$FILE"; ${pkgs.grim}/bin/grim -g "$(${pkgs.slurp}/bin/slurp -d)" "$FILE"
+        bind=,F10,exec,grim -g "$(slurp -d)" - | wl-copy
+        bind=SHIFT,F10,exec,FILE="$HOME/Pictures/sc_$(date +"%F_%I_%M_%S").png"; ${pkgs.wl-clipboard}/bin/wl-copy "$FILE"; grim -g "$(slurp -d)" "$FILE"
         bindle=,XF86AudioRaiseVolume,exec,inc_volume
         bindle=,XF86AudioLowerVolume,exec,dec_volume
         bindle=,KP_Multiply,exec,inc_volume
@@ -282,6 +278,7 @@
 
     programs.foot = {
       enable = true;
+      package = pkgs.hello;
       settings = {
         main = {
           font = "monospace:size=14";
@@ -366,7 +363,7 @@
 
     programs.vscode = {
       enable = true;
-      package = pkgs.vscodium;
+      package = pkgs.hello // {pname = "vscodium";};
       mutableExtensionsDir = true;
       haskell = {
         enable = true;
@@ -605,7 +602,7 @@
       };
       initExtra = ''
         if [ -z $DISPLAY ] && [ "$(tty)" = "/dev/tty1" ]; then
-            exec nixGL dbus-run-session Hyprland --config ~/.config/hypr/hyprland.conf 2>&1 | tee /tmp/Hyprland.out
+            exec dbus-run-session Hyprland --config ~/.config/hypr/hyprland.conf 2>&1 | tee /tmp/Hyprland.out
         fi
         #eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
         export LD_LIBRARY_PATH="/usr/lib64/R/lib:/usr/lib:$LD_LIBRARY_PATH"
@@ -1093,11 +1090,7 @@
     services.playerctld.enable = true;
 
     home.packages = with pkgs; [
-      swayimg.out
-      iwgtk
       powercap
-
-      thunderbird
 
       wl-clipboard-x11.out
 
@@ -1131,7 +1124,7 @@
       (pkgs.writeShellApplication {
         name = "obsidian";
         text = ''
-          ${pkgs.obsidian}/bin/obsidian --enable-features=UseOzonePlatform --ozone-platform=wayland "$@"
+          obsidian --enable-features=UseOzonePlatform --ozone-platform=wayland "$@"
         '';
       })
 
@@ -1174,17 +1167,13 @@
         '';
       })
 
-      helvum
       i7z
-      xorg.xeyes
       playerctl
-      wl-clipboard
 
       greetd.greetd
       ronn
       pavucontrol
 
-      zotero
       #python2
       #(pkgs.writeShellApplication {
       #  name = "zotero";
@@ -1193,13 +1182,6 @@
       #    cage zotero
       #  '';
       #})
-      (pkgs.writeShellApplication {
-        name = "ripcord";
-        runtimeInputs = with pkgs; [ripcord cage];
-        text = ''
-          cage ripcord
-        '';
-      })
       winetricks
       wineWowPackages.stagingFull
 
